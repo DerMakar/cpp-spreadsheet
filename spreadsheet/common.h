@@ -42,13 +42,25 @@ public:
         Div0,  // в результате вычисления возникло деление на ноль
     };
 
-    FormulaError(Category category);
+    FormulaError(Category category) : category_(category) {
 
-    Category GetCategory() const;
+    }
 
-    bool operator==(FormulaError rhs) const;
+    Category GetCategory() const {
+        return category_;
+    }
 
-    std::string_view ToString() const;
+    bool operator==(FormulaError rhs) const {
+        return category_ == rhs.category_;
+    }
+
+    std::string_view ToString() const {
+        switch (category_) {
+        case(FormulaError::Category::Div0): return "#DIV/0!";
+        case(FormulaError::Category::Ref): return "#REF";
+        default: return "#VALUE";
+        }
+    }
 
 private:
     Category category_;
@@ -99,6 +111,8 @@ public:
     virtual std::vector<Position> GetReferencedCells() const = 0;
 };
 
+
+
 inline constexpr char FORMULA_SIGN = '=';
 inline constexpr char ESCAPE_SIGN = '\'';
 
@@ -147,3 +161,4 @@ public:
 
 // Создаёт готовую к работе пустую таблицу.
 std::unique_ptr<SheetInterface> CreateSheet();
+
