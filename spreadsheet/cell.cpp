@@ -60,9 +60,13 @@ std::string EmptyImpl::GetText() const {
     void Cell::Set(std::string text) {
         if (text == GetText()) return;
         InvalidateCash();
+        for (Cell* cell : ref_cells) {
+            cell->PopParent(this);
+        }
+        ref_cells.clear();
+        parent_cells.clear();
         if (text.empty()) {
-            impl_ = std::unique_ptr<EmptyImpl>(nullptr);   
-            ref_cells.clear();
+            impl_ = std::unique_ptr<EmptyImpl>(nullptr);             
         }
         else if (text[0] == FORMULA_SIGN && text.size() > 1) {
            try {
@@ -79,7 +83,7 @@ std::string EmptyImpl::GetText() const {
                 ref_cells = nf_ref_cells;
                 for (Cell* cell : ref_cells) {
                     if (cell == nullptr) continue;
-                    cell->AddParent(cell);
+                    cell->AddParent(this);
                 }
             }
            catch (CircularDependencyException&) {
@@ -97,9 +101,6 @@ std::string EmptyImpl::GetText() const {
     }
 
     void Cell::Clear() {
-        for (Cell* cell : ref_cells) {
-            cell->PopParent(this);
-        }
         Set("");
     }
 
