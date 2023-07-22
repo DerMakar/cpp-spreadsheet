@@ -57,14 +57,10 @@ public:
 
 class Cell : public CellInterface {
 public:
-    Cell() = default;
-
-    Cell(Sheet* sheet) : sheet_(sheet) {
+    explicit Cell(Sheet* sheet) : sheet_(sheet) {
     }
 
     ~Cell() = default;
-
-    void SetSheet(Sheet* sheet);
 
     void Set(std::string text);
 
@@ -72,14 +68,12 @@ public:
 
     Value GetValue() const override;
     std::string GetText() const override;
-
+   
     std::vector<Position> GetReferencedCells() const override;
 
     void CircularDependency();
 
     bool IsReferenced() const;
-
-    void InvalidateCash();    
 
 private:
     Sheet* sheet_ = nullptr;
@@ -87,12 +81,12 @@ private:
     std::vector<Cell*> ref_cells; // vector Cells which are in formula
     std::vector<Cell*> parent_cells; // vector Cells which are referenced by this
     mutable std::optional<double> cashe;
-    std::string set_text;
-
+   
     std::vector<Cell*> MakeRefCellsPtr(const std::vector<Position>& ref_cells_pos);
 
     void CircularDependency(const  std::vector<Cell*>& references);
     void CircularDependency(std::unordered_set<Cell*>& counter, Cell* start);
     void AddParent(Cell* parent);
     void PopParent(Cell* parent);
+    void InvalidateCash();
  };

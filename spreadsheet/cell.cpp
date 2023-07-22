@@ -58,9 +58,11 @@ std::string EmptyImpl::GetText() const {
 
 
     void Cell::Set(std::string text) {
-        if (!set_text.empty() && text == set_text) return;
+        if (text == GetText()) return;
+        InvalidateCash();
         if (text.empty()) {
-            impl_ = std::unique_ptr<EmptyImpl>(nullptr);           
+            impl_ = std::unique_ptr<EmptyImpl>(nullptr);   
+            ref_cells.clear();
         }
         else if (text[0] == FORMULA_SIGN && text.size() > 1) {
            try {
@@ -92,21 +94,19 @@ std::string EmptyImpl::GetText() const {
             impl_ = std::make_unique<TextImpl>(text);  
             ref_cells.clear();
         }
-        set_text = text;
     }
 
     void Cell::Clear() {
-        impl_.release();
         for (Cell* cell : ref_cells) {
-            cell->PopParent(this);            
+            cell->PopParent(this);
         }
-        ref_cells.clear();
-        parent_cells.clear();
-        cashe.reset();
+        Set("");
     }
 
     Cell::Value Cell::GetValue() const  {
         if (impl_ == nullptr) return 0.0;
+        Value result = impl_->GetValue(*sheet_);
+        if (std::holds_alternative<double>(result)) cashe = std::get<double>(result);
         return impl_->GetValue(*sheet_);
     }
     std::string Cell::GetText() const {
@@ -169,10 +169,6 @@ std::string EmptyImpl::GetText() const {
 
     void Cell::CircularDependency() {
         CircularDependency(ref_cells);
-    }
-
-    void Cell::SetSheet(Sheet* sheet) {
-        sheet_ = sheet;
     }
 
     bool Cell::IsReferenced() const {

@@ -29,11 +29,9 @@ void Sheet::SetCell(Position pos, std::string text) {
     }
 
     if (sheet_[pos.row][pos.col] == nullptr) {
-        sheet_[pos.row][pos.col] = std::make_unique<Cell>();
-        sheet_[pos.row][pos.col]->SetSheet(this);
+        sheet_[pos.row][pos.col] = std::make_unique<Cell>(this);
     }
     sheet_[pos.row][pos.col]->Set(text);
-    sheet_[pos.row][pos.col]->InvalidateCash();
     sheet_size_.rows = std::max(sheet_size_.rows, pos.row + 1);
     sheet_size_.cols = std::max(sheet_size_.cols, pos.col + 1);
 }
@@ -43,9 +41,8 @@ void Sheet::SetEmptyCell(Position pos) {
     if (size_t(pos.row) + 1 > sheet_.size()) sheet_.resize(pos.row + 1);
     if (sheet_[pos.row].size() < size_t(pos.col + 1)) {
         sheet_[pos.row].resize(pos.col + 1);
-        sheet_[pos.row][pos.col] = std::make_unique<Cell>();
-        sheet_[pos.row][pos.col]->Set("");
-        sheet_[pos.row][pos.col]->SetSheet(this);       
+        sheet_[pos.row][pos.col] = std::make_unique<Cell>(this);
+        sheet_[pos.row][pos.col]->Set("");      
     }
 }
 
@@ -53,24 +50,18 @@ const CellInterface* Sheet::GetCell(Position pos) const {
     if (!pos.IsValid()) {
         throw InvalidPositionException("");
     }
-    if (IsValid(pos)) {
-        if (size_t(pos.row) + 1 > sheet_.size() ||
-            sheet_[pos.row].size() < size_t(pos.col + 1)) return nullptr;
+    if (!IsValid(pos)) return nullptr;
         Cell* value = sheet_[pos.row][pos.col].get();
         return value;
-    }
-    return nullptr;
 }
 
 CellInterface* Sheet::GetCell(Position pos) {
     if (!pos.IsValid()) {
         throw InvalidPositionException("");
     }
-    if (IsValid(pos)) {
-        Cell* value = sheet_[pos.row][pos.col].get();
-        return value;
-    }
-    return nullptr;
+    if (!IsValid(pos)) return nullptr;
+    Cell* value = sheet_[pos.row][pos.col].get();
+    return value;
 }
 
 void Sheet::ClearCell(Position pos) {
@@ -78,6 +69,7 @@ void Sheet::ClearCell(Position pos) {
         throw InvalidPositionException("");
     }
     if (IsValid(pos) && sheet_[pos.row][pos.col] != nullptr) {
+        sheet_[pos.row][pos.col]->Clear();
         sheet_[pos.row][pos.col].release();
         if (sheet_size_.rows == pos.row + 1) {
             if (sheet_size_.rows == 1) {
