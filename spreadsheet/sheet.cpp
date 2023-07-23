@@ -70,6 +70,7 @@ void Sheet::ClearCell(Position pos) {
     }
     if (IsValid(pos) && sheet_[pos.row][pos.col] != nullptr) {
         sheet_[pos.row][pos.col]->Clear();
+        if (sheet_[pos.row][pos.col]->IsReferenced()) return;
         sheet_[pos.row][pos.col].release();
         if (sheet_size_.rows == pos.row + 1) {
             if (sheet_size_.rows == 1) {

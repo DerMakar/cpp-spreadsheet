@@ -59,49 +59,38 @@ std::string EmptyImpl::GetText() const {
 
     void Cell::Set(std::string text) {
         if (text == GetText()) return;
-        InvalidateCash();
-        for (Cell* cell : ref_cells) {
-            cell->PopParent(this);
-        }
-        ref_cells.clear();
-        parent_cells.clear();
         if (text.empty()) {
-            impl_ = std::unique_ptr<EmptyImpl>(nullptr);             
-        }
-        else if (text[0] == FORMULA_SIGN && text.size() > 1) {
-           try {
-                FormulaImpl new_formula(text.substr(1));
-                const auto& references = new_formula.GetReferencedCells();
-                std::vector<Cell*> nf_ref_cells = MakeRefCellsPtr(references);
-                try {
-                    CircularDependency(nf_ref_cells);
-                }
-                catch (CircularDependencyException&) {
-                    throw;
-                }
-                impl_ = std::make_unique<FormulaImpl>(std::move(new_formula));
-                ref_cells = nf_ref_cells;
-                for (Cell* cell : ref_cells) {
-                    if (cell == nullptr) continue;
-                    cell->AddParent(this);
-                }
-            }
-           catch (CircularDependencyException&) {
-               throw;
-           }
-           catch(...){
-                throw FormulaException("");
-            }
-            
-        }
-        else {
-            impl_ = std::make_unique<TextImpl>(text);  
+            impl_ = std::unique_ptr<EmptyImpl>(nullptr);
+            for (Cell* cell : ref_cells) {
+            cell->PopParent(this);
+            }   
             ref_cells.clear();
         }
+        else if (text[0] == FORMULA_SIGN && text.size() > 1) {
+            FormulaImpl new_formula(text.substr(1));
+            const auto& references = new_formula.GetReferencedCells();
+            std::vector<Cell*> nf_ref_cells = MakeRefCellsPtr(references);
+            CircularDependency(nf_ref_cells);
+            impl_ = std::make_unique<FormulaImpl>(std::move(new_formula));
+            ref_cells = nf_ref_cells;
+            for (Cell* cell : ref_cells) {
+                if (cell == nullptr) continue;
+                cell->AddParent(this);
+
+            }
+        }
+        else {
+            impl_ = std::make_unique<TextImpl>(text);
+            for (Cell* cell : ref_cells) {
+                cell->PopParent(this);
+            }
+            ref_cells.clear();
+        }
+        InvalidateCash();
     }
 
     void Cell::Clear() {
-        Set("");
+        Set(std::string());
     }
 
     Cell::Value Cell::GetValue() const  {
@@ -173,7 +162,7 @@ std::string EmptyImpl::GetText() const {
     }
 
     bool Cell::IsReferenced() const {
-        return !ref_cells.empty();
+        return !parent_cells.empty();
     }
     
     std::vector<Position> Cell::GetReferencedCells() const {
