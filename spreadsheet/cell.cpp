@@ -72,6 +72,9 @@ std::string EmptyImpl::GetText() const {
             std::vector<Cell*> nf_ref_cells = MakeRefCellsPtr(references);
             CircularDependency(nf_ref_cells);
             impl_ = std::make_unique<FormulaImpl>(std::move(new_formula));
+            for (Cell* cell : ref_cells) {
+                cell->PopParent(this);
+            }
             ref_cells = nf_ref_cells;
             for (Cell* cell : ref_cells) {
                 if (cell == nullptr) continue;
