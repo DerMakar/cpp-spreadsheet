@@ -351,7 +351,8 @@ namespace {
         ASSERT(caught);
         ASSERT_EQUAL(sheet->GetCell("M6"_pos)->GetText(), "Ready");
     }
-}  // namespace
+    
+    }  // namespace
 
 int main() {
     TestRunner tr;

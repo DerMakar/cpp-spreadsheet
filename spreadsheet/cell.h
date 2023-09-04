@@ -22,7 +22,6 @@ public:
     CellInterface::Value GetValue(const SheetInterface& sheet) const override;
 
     std::vector<Position> GetReferencedCells() const override;
-
 };
 
 class TextImpl : public Impl {
@@ -78,8 +77,8 @@ public:
 private:
     Sheet* sheet_ = nullptr;
     std::unique_ptr<Impl> impl_;
-    std::vector<Cell*> ref_cells; // vector Cells which are in formula
-    std::vector<Cell*> parent_cells; // vector Cells which are referenced by this
+    std::vector<Cell*> ref_cells; 
+    std::vector<Cell*> parent_cells; 
     mutable std::optional<double> cashe;
    
     std::vector<Cell*> MakeRefCellsPtr(const std::vector<Position>& ref_cells_pos);

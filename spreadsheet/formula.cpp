@@ -39,15 +39,12 @@ std::optional<double> IsDigit(std::string_view text) {
     }
 }
 
-
 namespace {
     class Formula : public FormulaInterface {
     public:
-        // Реализуйте следующие методы:
-        explicit Formula(std::string expression) : ast_ (ParseFormulaAST(expression)){
+    explicit Formula(std::string expression) : ast_ (ParseFormulaAST(expression)){
         }
-       
-    
+           
     Value Evaluate(const SheetInterface& sheet) const override {
         std::function<std::variant<double, FormulaError>(Position)> GetValue = [&sheet](const Position pos) -> std::variant<double, FormulaError> {
             if (!pos.IsValid()) {
@@ -75,14 +72,12 @@ namespace {
                 return std::get<FormulaError>(result);
             }            
         };
-
         Value result = 0.0;
         try{
             result = ast_.Execute(GetValue);
         }
         catch (FormulaError& fe) {
             result = fe;
-           
         }
         return result;
     }
@@ -113,5 +108,4 @@ std::unique_ptr<FormulaInterface> ParseFormula(std::string expression) {
     catch (...) {
         throw FormulaException("wrong form");
     }
-   
 }

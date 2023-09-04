@@ -14,7 +14,6 @@ bool Sheet::IsValid(Position pos) const {
     return sheet_.size() > size_t(pos.row) && sheet_[pos.row].size() > size_t(pos.col);
 }
 
-
 void Sheet::SetCell(Position pos, std::string text) {
     if (!pos.IsValid()) {
         throw InvalidPositionException("");
@@ -95,8 +94,7 @@ void Sheet::ClearCell(Position pos) {
             }
             sheet_size_.cols = max_col;
         }               
-    }
-    
+    }    
 }
 
 Size Sheet::GetPrintableSize() const {
@@ -121,10 +119,8 @@ void Sheet::PrintValues(std::ostream& output) const {
 }
 
 void Sheet::PrintTexts(std::ostream& output) const {
-    //std::cout << "start print" << std::endl;
     for (int i = 0; i < sheet_size_.rows; ++i) {
         for (int m = 0; m < sheet_size_.cols; ++m) {
-            //std::cout << "printing " << i << " " << m << " elem" << std::endl;
             if (size_t(m) < sheet_[i].size() && sheet_[i][m] != nullptr) {
                 output << sheet_[i][m]->GetText();
             }
